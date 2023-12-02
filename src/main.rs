@@ -2,6 +2,8 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 
+const MAX_NUMBER_LENGTH: usize = 5;
+
 fn main() {
     let f = open_file("input.txt".to_string()).unwrap();
     let lines = read_lines_from_file(f).unwrap();
@@ -10,51 +12,27 @@ fn main() {
     let mut last: u32;
 
     let mut i: usize;
-
     let mut total = 0;
 
-    let numbers: Vec<String> = vec![
-        "one".to_string(),
-        "two".to_string(),
-        "three".to_string(),
-        "four".to_string(),
-        "five".to_string(),
-        "six".to_string(),
-        "seven".to_string(),
-        "eight".to_string(),
-        "nine".to_string(),
-        "1".to_string(),
-        "2".to_string(),
-        "3".to_string(),
-        "4".to_string(),
-        "5".to_string(),
-        "6".to_string(),
-        "7".to_string(),
-        "8".to_string(),
-        "9".to_string(),
-    ];
-
     for line in lines {
+        // resetting values per line
         i = 0;
-
         first = 0;
         last = 0;
 
         let chars = line.chars().collect::<Vec<char>>();
-
         for j in 0..=chars.len() {
             let diff = j - i;
 
-            if diff > 5 {
+            if diff > MAX_NUMBER_LENGTH {
                 i += 1;
             }
 
             let mut z = 0;
-
             while i + z < j {
                 let word = &chars.as_slice()[i + z..j].iter().collect::<String>();
-                if compare(word.to_string(), numbers.clone()) {
-                    let n = str_to_int(word.to_string());
+                let n = str_to_int(word.to_string());
+                if n > 0 {
                     if first > 0 {
                         last = n;
                     } else {
@@ -67,8 +45,6 @@ fn main() {
         }
 
         let t = calc(first, last);
-
-        // println!("t: {}", t);
         total += t;
     }
 
@@ -106,17 +82,6 @@ fn str_to_int(s: String) -> u32 {
         s if s == "nine" || s == "9" => 9,
         _ => 0,
     }
-}
-
-fn compare(word: String, numbers: Vec<String>) -> bool {
-    let mut found = false;
-    for n in numbers {
-        if word == n {
-            found = true;
-            break;
-        }
-    }
-    found
 }
 
 fn open_file(input: String) -> Result<File, String> {
