@@ -5,7 +5,8 @@ use std::io::BufReader;
 const MAX_NUMBER_LENGTH: usize = 5;
 
 fn main() {
-    let f = open_file("input.txt".to_string()).unwrap();
+    // run from root folder
+    let f = open_file("day1/input.txt".to_string()).unwrap();
     let lines = read_lines_from_file(f).unwrap();
 
     let mut first: u32;
