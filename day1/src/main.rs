@@ -1,13 +1,9 @@
-use std::fs::File;
-use std::io::BufRead;
-use std::io::BufReader;
-
 const MAX_NUMBER_LENGTH: usize = 5;
 
 fn main() {
     // run from root folder
-    let f = open_file("day1/input.txt".to_string()).unwrap();
-    let lines = read_lines_from_file(f).unwrap();
+    let f = lib::open_file("day1/input.txt".to_string()).unwrap();
+    let lines = lib::read_lines_from_file(f).unwrap();
 
     let mut first: u32;
     let mut last: u32;
@@ -83,24 +79,4 @@ fn str_to_int(s: String) -> u32 {
         s if s == "nine" || s == "9" => 9,
         _ => 0,
     }
-}
-
-fn open_file(input: String) -> Result<File, String> {
-    let f = File::open(input);
-    match f {
-        Ok(file) => Ok(file),
-        Err(error) => Err(error.to_string()),
-    }
-}
-
-fn read_lines_from_file(file: File) -> Result<Vec<String>, String> {
-    let mut lines = Vec::new();
-    let buf_reader = BufReader::new(file);
-    for line in buf_reader.lines() {
-        match line {
-            Ok(line) => lines.push(line),
-            Err(error) => return Err(error.to_string()),
-        }
-    }
-    Ok(lines)
 }
