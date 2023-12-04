@@ -26,6 +26,18 @@ pub fn read_lines_from_file(file: File) -> Result<Vec<String>, String> {
     Ok(lines)
 }
 
+pub fn read_chars_from_file(file: File) -> Result<Vec<Vec<char>>, String> {
+    let mut lines = Vec::new();
+    let buf_reader = BufReader::new(file);
+    for line in buf_reader.lines() {
+        match line {
+            Ok(line) => lines.push(line.chars().collect::<Vec<char>>()),
+            Err(error) => return Err(error.to_string()),
+        }
+    }
+    Ok(lines)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
