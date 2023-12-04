@@ -1,18 +1,15 @@
 use std::collections::{HashMap, HashSet};
 
 fn main() {
-    let f = lib::open_file("day4/test.txt".to_string()).unwrap();
+    let f = lib::open_file("day4/input.txt".to_string()).unwrap();
     let lines = lib::read_lines_from_file(f).unwrap();
 
     let mut cards_score = 0;
-    let mut copies_map: HashMap<usize, usize> = HashMap::new();
-
-    let len = lines.len();
+    let mut cards_map: HashMap<usize, usize> = HashMap::new();
 
     for (i, line) in lines.iter().enumerate() {
         let card_number = i + 1;
-        let copies = *copies_map.entry(card_number).or_insert(1);
-        println!("Card: {} Copies: {}", card_number, copies);
+        let copies = *cards_map.entry(card_number).or_insert(1);
 
         let mut parts = line.split(':');
         // discard cardnumber
@@ -34,6 +31,7 @@ fn main() {
                 if number.is_empty() {
                     continue;
                 }
+
                 if score == 0 {
                     score += 1;
                 } else {
@@ -44,26 +42,33 @@ fn main() {
             }
         }
 
-        println!("Matches: {}", matches);
+        println!("Card number: {}. Matches: {}", card_number, matches);
 
         cards_score += score;
 
         for j in 1..=matches {
             let n = card_number + j;
-            if n == len {
-                break;
-            }
-
-            copies_map
-                .entry(card_number + j)
+            cards_map
+                .entry(n)
                 .and_modify(|e| *e += copies)
-                .or_insert(2);
+                .or_insert(1 + copies);
         }
 
-        println!("copies_map: {:?}", copies_map);
+        print_map(&cards_map);
     }
 
     println!("Score Total: {}", cards_score);
-    let total = copies_map.values().sum::<usize>();
+    let total = cards_map.values().sum::<usize>();
     println!("Total: {}", total);
+}
+
+fn print_map(map: &HashMap<usize, usize>) {
+    let mut sorted_keys = map.keys().collect::<Vec<&usize>>();
+    sorted_keys.sort();
+
+    print!("cards_map: {{ ");
+    for key in sorted_keys {
+        print!("{}:{}, ", key, map[key]);
+    }
+    println!(" }}");
 }
