@@ -42,7 +42,7 @@ fn main() {
             }
         }
 
-        println!("Card number: {}. Matches: {}", card_number, matches);
+        // println!("Card number: {}. Matches: {}", card_number, matches);
 
         cards_score += score;
 
@@ -54,7 +54,7 @@ fn main() {
                 .or_insert(1 + copies);
         }
 
-        print_map(&cards_map);
+        // print_map(&cards_map);
     }
 
     println!("Score Total: {}", cards_score);
