@@ -5,6 +5,8 @@ fn main() {
     let lines = lib::read_lines_from_file(f).unwrap();
 
     let mut seeds = vec![];
+    let mut seeds_part_2 = vec![];
+
     let mut source_to_location = HashMap::new();
 
     for line in lines {
@@ -18,7 +20,25 @@ fn main() {
                 .filter_map(Result::ok)
                 .collect();
 
-            println!("seeds init: {:?}", seeds);
+            // count how many elements we need to have in seeds_part_2
+            let mut count = 0;
+            for i in (0..seeds.len()).step_by(2) {
+                let range = seeds[i + 1];
+                count += range;
+            }
+
+            // actually assing new elements to seeds_part_2
+            seeds_part_2 = Vec::with_capacity(count);
+            for i in (0..seeds.len()).step_by(2) {
+                let seed = seeds[i];
+                let range = seeds[i + 1];
+
+                for j in seed..(seed + range) {
+                    seeds_part_2.push(j);
+                }
+            }
+            println!("len seeds_part_2: {}", seeds_part_2.len());
+            // println!("seeds init: {:?}", seeds);
             continue;
         }
 
@@ -28,7 +48,7 @@ fn main() {
 
         if line.contains("map:") {
             seeds = process(&seeds, &source_to_location);
-            println!("seeds: {:?}", seeds);
+            seeds_part_2 = process(&seeds_part_2, &source_to_location);
             source_to_location = HashMap::new();
             continue;
         }
@@ -49,14 +69,20 @@ fn main() {
     }
 
     seeds = process(&seeds, &source_to_location);
-    println!("seeds: {:?}", seeds);
+    seeds_part_2 = process(&seeds_part_2, &source_to_location);
+
+    // println!("seeds: {:?}", seeds);
+    // println!("seeds2: {:?}", seeds_part_2);
 
     let min = seeds.iter().min().unwrap();
+    let min_2 = seeds_part_2.iter().min().unwrap();
+
     println!("min: {}", min);
+    println!("min2: {}", min_2);
 }
 
 fn process(seeds: &Vec<usize>, source_to_location: &HashMap<usize, (usize, usize)>) -> Vec<usize> {
-    let mut new_seeds = vec![];
+    let mut new_seeds = Vec::with_capacity(seeds.len());
 
     for seed in seeds {
         let new_seed = get(source_to_location, *seed);
