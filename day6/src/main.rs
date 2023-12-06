@@ -35,6 +35,41 @@ fn main() {
     }
 
     println!("total: {}", total);
+
+    // Part 2
+    let mut parts = lines[0].split(':');
+    parts.next();
+
+    let time2: usize = parts
+        .next()
+        .unwrap()
+        .split(' ')
+        .flat_map(|s| s.trim().chars())
+        .collect::<String>()
+        .parse()
+        .unwrap();
+
+    let mut parts = lines[1].split(':');
+    parts.next();
+
+    let distance2: usize = parts
+        .next()
+        .unwrap()
+        .split(' ')
+        .flat_map(|s| s.trim().chars())
+        .collect::<String>()
+        .parse()
+        .unwrap();
+
+    let mut total_2 = 0;
+    for i in 1..time2 {
+        let r = (time2 - i) * i;
+        if r > distance2 {
+            total_2 += 1;
+        }
+    }
+
+    println!("total_2: {}", total_2);
 }
 
 // x = 7ms
