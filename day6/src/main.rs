@@ -4,6 +4,7 @@ fn main() {
 
     let time: Vec<usize> = lines[0]
         .split(' ')
+        .skip(1)
         .map(|s| s.trim())
         .map(|s| s.parse::<usize>())
         .filter_map(Result::ok)
@@ -11,6 +12,7 @@ fn main() {
 
     let distance: Vec<usize> = lines[1]
         .split(' ')
+        .skip(1)
         .map(|s| s.trim())
         .map(|s| s.parse::<usize>())
         .filter_map(Result::ok)
@@ -37,25 +39,17 @@ fn main() {
     println!("total: {}", total);
 
     // Part 2
-    let mut parts = lines[0].split(':');
-    parts.next();
-
-    let time2: usize = parts
-        .next()
-        .unwrap()
+    let time2: usize = lines[0]
         .split(' ')
+        .skip(1)
         .flat_map(|s| s.trim().chars())
         .collect::<String>()
         .parse()
         .unwrap();
 
-    let mut parts = lines[1].split(':');
-    parts.next();
-
-    let distance2: usize = parts
-        .next()
-        .unwrap()
+    let distance2: usize = lines[1]
         .split(' ')
+        .skip(1)
         .flat_map(|s| s.trim().chars())
         .collect::<String>()
         .parse()
