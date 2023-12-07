@@ -1,5 +1,6 @@
 use core::hash::Hash;
 use core::hash::Hasher;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 pub enum Hand {
@@ -51,29 +52,108 @@ impl Hand {
         values.sort();
 
         match values.as_slice() {
-            [1, 1, 1, 1, 1] => Ok(Hand::Distinct(
-                cards[0], cards[1], cards[2], cards[3], cards[4],
+            [1, 1, 1, 1, 1] => Ok(joker_haha(
+                map,
+                Hand::Distinct(cards[0], cards[1], cards[2], cards[3], cards[4]),
             )),
-            [1, 1, 1, 2] => Ok(Hand::OnePair(
-                cards[0], cards[1], cards[2], cards[3], cards[4],
+            [1, 1, 1, 2] => Ok(joker_haha(
+                map,
+                Hand::OnePair(cards[0], cards[1], cards[2], cards[3], cards[4]),
             )),
-            [1, 2, 2] => Ok(Hand::TwoPairs(
-                cards[0], cards[1], cards[2], cards[3], cards[4],
+            [1, 2, 2] => Ok(joker_haha(
+                map,
+                Hand::TwoPairs(cards[0], cards[1], cards[2], cards[3], cards[4]),
             )),
-            [1, 1, 3] => Ok(Hand::ThreeOfAKind(
-                cards[0], cards[1], cards[2], cards[3], cards[4],
+            [1, 1, 3] => Ok(joker_haha(
+                map,
+                Hand::ThreeOfAKind(cards[0], cards[1], cards[2], cards[3], cards[4]),
             )),
-            [2, 3] => Ok(Hand::FullHouse(
-                cards[0], cards[1], cards[2], cards[3], cards[4],
+            [2, 3] => Ok(joker_haha(
+                map,
+                Hand::FullHouse(cards[0], cards[1], cards[2], cards[3], cards[4]),
             )),
-            [1, 4] => Ok(Hand::FourOfAKind(
-                cards[0], cards[1], cards[2], cards[3], cards[4],
+            [1, 4] => Ok(joker_haha(
+                map,
+                Hand::FourOfAKind(cards[0], cards[1], cards[2], cards[3], cards[4]),
             )),
+            // no need to calculate joker
             [5] => Ok(Hand::FiveOfAKind(
                 cards[0], cards[1], cards[2], cards[3], cards[4],
             )),
             _ => Err("Invalid hand".to_string()),
         }
+    }
+}
+
+fn joker_haha(cards: HashMap<&Card, usize>, hand: Hand) -> Hand {
+    let count = cards.get(&Card::Joker).unwrap_or(&0_usize);
+    if *count == 0 {
+        return hand;
+    }
+    match hand {
+        Hand::Distinct(c1, c2, c3, c4, c5) => match count {
+            // joker can only have one possible value
+            // so in this case joker can make a one pair
+            1 => Hand::OnePair(c1, c2, c3, c4, c5),
+            _ => panic!("Invalid hand"),
+        },
+        Hand::OnePair(c1, c2, c3, c4, c5) => match count {
+            // if joker is _not_ in the pair, the count should be 1
+            // so there is one pair like A, A, J and other two different cards
+            // in this case joker can make a three of a kind
+            1 => Hand::ThreeOfAKind(c1, c2, c3, c4, c5),
+            // if joker is in the pair, the count should be 2
+            // so there is one pair like J, J and three different cards
+            // in this case the joker can make a three of a kind with another random card
+            2 => Hand::ThreeOfAKind(c1, c2, c3, c4, c5),
+            _ => panic!("Invalid hand"),
+        },
+        Hand::TwoPairs(c1, c2, c3, c4, c5) => match count {
+            // if joker is _not_ in the pairs, the count should be 1
+            // so there are two pairs like A, A, Q, Q, and the joker
+            // in this case joker can make a full house
+            1 => Hand::FullHouse(c1, c2, c3, c4, c5),
+            // if joker is in one of the pairs, the count should be 2
+            // so there are two pairs like A, A, J, J and another different card
+            // in this case joker can make a four of a kind
+            2 => Hand::FourOfAKind(c1, c2, c3, c4, c5),
+            _ => panic!("Invalid hand"),
+        },
+        Hand::ThreeOfAKind(c1, c2, c3, c4, c5) => match count {
+            // if joker is _not_ in the three of a kind, the count should be 1
+            // so there is a three of a kind like A, A, A, J and another different card
+            // in this case joker can make a four of a kind
+            1 => Hand::FourOfAKind(c1, c2, c3, c4, c5),
+            // if joker is in the three of a kind, the count should be 3
+            // so there is a three of a kind like J, J, J and two different cards
+            // in this case joker can make a four of a kind
+            3 => Hand::FourOfAKind(c1, c2, c3, c4, c5),
+            _ => panic!("Invalid hand"),
+        },
+        Hand::FullHouse(c1, c2, c3, c4, c5) => match count {
+            // if joker is in the full house as the lesser pair, the count should be 2
+            // so there is a full house like A, A, A, J, J
+            // in this case joker can make a five of a kind
+            2 => Hand::FiveOfAKind(c1, c2, c3, c4, c5),
+            // if joker is in the full house as the bigger pair, the count should be 2
+            // so there is a full house like A, A, J, J, J
+            // in this case joker can make a five of a kind
+            3 => Hand::FiveOfAKind(c1, c2, c3, c4, c5),
+            _ => panic!("Invalid hand"),
+        },
+        Hand::FourOfAKind(c1, c2, c3, c4, c5) => match count {
+            // if joker is _not_ in the four of a kind, the count should be 1
+            // so there is a four of a kind like A, A, A, A, J
+            // in this case joker can make a five of a kind
+            1 => Hand::FiveOfAKind(c1, c2, c3, c4, c5),
+            // if joker is in the four of a kind, the count should be 4
+            // so there is a four of a kind like J, J, J, J and another different card
+            // in this case joker can make a five of a kind
+            4 => Hand::FiveOfAKind(c1, c2, c3, c4, c5),
+            _ => panic!("Invalid hand"),
+        },
+        // there are 5 jokers, no need to change
+        Hand::FiveOfAKind(c1, c2, c3, c4, c5) => Hand::FiveOfAKind(c1, c2, c3, c4, c5),
     }
 }
 
@@ -194,7 +274,6 @@ pub enum Card {
     Ace,
     King,
     Queen,
-    Jack,
     Ten,
     Nine,
     Eight,
@@ -204,6 +283,7 @@ pub enum Card {
     Four,
     Three,
     Two,
+    Joker,
 }
 
 impl Card {
@@ -212,7 +292,6 @@ impl Card {
             Card::Ace => 14,
             Card::King => 13,
             Card::Queen => 12,
-            Card::Jack => 11,
             Card::Ten => 10,
             Card::Nine => 9,
             Card::Eight => 8,
@@ -222,6 +301,7 @@ impl Card {
             Card::Four => 4,
             Card::Three => 3,
             Card::Two => 2,
+            Card::Joker => 1,
         }
     }
 
@@ -230,7 +310,6 @@ impl Card {
             'A' => Ok(Card::Ace),
             'K' => Ok(Card::King),
             'Q' => Ok(Card::Queen),
-            'J' => Ok(Card::Jack),
             'T' => Ok(Card::Ten),
             '9' => Ok(Card::Nine),
             '8' => Ok(Card::Eight),
@@ -240,6 +319,7 @@ impl Card {
             '4' => Ok(Card::Four),
             '3' => Ok(Card::Three),
             '2' => Ok(Card::Two),
+            'J' => Ok(Card::Joker),
             _ => Err("Invalid card".to_string()),
         }
     }
