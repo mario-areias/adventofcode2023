@@ -1,0 +1,86 @@
+use std::collections::HashMap;
+
+pub enum Directions {
+    Left,
+    Right,
+}
+
+impl Directions {
+    fn from_str(s: &str) -> Vec<Directions> {
+        s.chars()
+            .map(|c| Directions::from_char(c))
+            .collect::<Vec<Directions>>()
+    }
+
+    fn from_char(c: char) -> Directions {
+        match c {
+            'L' => Directions::Left,
+            'R' => Directions::Right,
+            _ => panic!("Invalid direction"),
+        }
+    }
+
+    fn value(&self) -> i32 {
+        match self {
+            Directions::Left => 0,
+            Directions::Right => 1,
+        }
+    }
+}
+fn main() {
+    let f = lib::open_file("day8/test2.txt".to_string()).unwrap();
+    let lines = lib::read_lines_from_file(f).unwrap();
+
+    let directions = Directions::from_str(&lines[0]);
+
+    let mut current_key = None;
+    let mut coordinates = HashMap::new();
+    for line in lines.iter().skip(1) {
+        if line.is_empty() {
+            continue;
+        }
+
+        let mut parts = line.split('=');
+        let key = parts.next().unwrap().trim();
+
+        if current_key.is_none() {
+            current_key = Some(key);
+        }
+
+        let values = parts.next().unwrap().trim();
+        // removing parenthesis
+        let v = &values[1..values.len() - 1];
+
+        let mut vparts = v.split(',');
+        coordinates.insert(
+            key.to_string(),
+            (vparts.next().unwrap().trim(), vparts.next().unwrap().trim()),
+        );
+    }
+
+    let mut count = 0;
+    for mut i in 0..directions.len() {
+        count += 1;
+        let index = &directions[i].value();
+
+        let current = current_key.unwrap();
+        let current_value = coordinates.get(current).unwrap().clone();
+
+        current_key = Some(if *index == 0 {
+            current_value.0
+        } else {
+            current_value.1
+        });
+
+        if current_key.unwrap() == "ZZZ" {
+            println!("Found ZZZ at {}", count);
+            break;
+        }
+
+        if i == directions.len() - 1 {
+            i = 0;
+        }
+    }
+
+    println!("{}", coordinates.len());
+}
